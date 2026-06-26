@@ -22,7 +22,11 @@ body {
   align-items: center;
   justify-content: center;
   scroll-behavior: smooth;
-  background: #edf0f4;
+  padding: 24px;
+  background:
+    radial-gradient(circle at 20% 18%, rgba(209, 127, 5, 0.22), transparent 42%),
+    radial-gradient(circle at 82% 82%, rgba(63, 77, 108, 0.28), transparent 46%),
+    linear-gradient(160deg, #1c2233 0%, #2c3447 55%, #1a1f2e 100%);
 }
 
 a { text-decoration: none; color: inherit; }
@@ -30,12 +34,31 @@ a { text-decoration: none; color: inherit; }
 button { font: inherit; }
 
 .device {
-  width: min(520px, 100%);
-  background: #fbfcfd;
-  border-radius: 28px;
-  border: 1px solid rgba(157, 136, 107, 0.12);
-  box-shadow: 0 24px 48px rgba(45, 56, 82, 0.12);
+  position: relative;
+  width: min(390px, 100%);
+  padding: 14px;
+  background: linear-gradient(160deg, #2a2a31 0%, #0c0c10 100%);
+  border-radius: 56px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 0 0 2px rgba(0, 0, 0, 0.6),
+    0 40px 80px rgba(0, 0, 0, 0.55),
+    inset 0 1px 2px rgba(255, 255, 255, 0.18);
   overflow: hidden;
+}
+
+/* Dynamic island / notch */
+.device-island {
+  position: absolute;
+  top: 22px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 110px;
+  height: 30px;
+  background: #000;
+  border-radius: 999px;
+  z-index: 20;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
 }
 
 .app-shell {
@@ -841,11 +864,286 @@ button { font: inherit; }
   color: #9b5d06;
 }
 
-@media (max-width: 420px) {
-  .app-shell { padding-left: 12px; padding-right: 12px; }
+@media (max-width: 480px) {
+  body { padding: 0; background: #fbfcfd; }
+  .device {
+    width: 100%;
+    height: 100vh;
+    height: 100dvh;
+    padding: 0;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    background: #fbfcfd;
+  }
+  .device-island { display: none; }
+  .app-shell { border-radius: 0; }
+  .status-bar { padding-top: max(14px, env(safe-area-inset-top)); }
   .service-card,
   .alert-card,
   .status-card,
   .license-card,
   .map-card { border-radius: 24px; }
+}
+
+/* ===== Estrutura do app / navegação ===== */
+.device {
+  display: flex;
+  flex-direction: column;
+  height: min(844px, 94vh);
+}
+
+.app-shell {
+  height: 100%;
+  min-height: 0;
+  background: #fbfcfd;
+  border-radius: 44px;
+  overflow: hidden;
+}
+
+/* ===== Barra de status (relógio + ícones) ===== */
+.status-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 28px 4px;
+  flex-shrink: 0;
+  color: #2f3743;
+}
+
+.status-bar__time {
+  font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+}
+
+.status-bar__icons {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.status-bar__icons svg {
+  width: 17px;
+  height: 14px;
+  fill: #2f3743;
+}
+
+.screen-container {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 0 20px 20px;
+}
+
+/* Visibilidade conforme login */
+.is-logged-out .app-only { display: none !important; }
+.is-logged-out .screen-container { padding-top: 8px; }
+
+/* o login usa layout em coluna mesmo sendo uma .screen */
+.screen.login-screen.active { display: flex; }
+
+.bottom-nav__item {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  gap: 4px;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.bottom-nav__item svg {
+  width: 22px;
+  height: 22px;
+  fill: currentColor;
+}
+
+/* Cards/botões clicáveis herdam aparência limpa de <button> */
+button.service-card,
+button.alert-card__action,
+button.link-text,
+.link-text {
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+button.service-card { background: #fff; }
+
+button.alert-card__action {
+  border: none;
+  background: transparent;
+  padding: 0;
+}
+
+.link-text { background: none; border: none; }
+
+/* ===== Mostrar/ocultar senha ===== */
+.input-wrap { position: relative; display: block; }
+.input-wrap .login-input { padding-right: 48px; }
+
+.reveal {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: transparent;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  color: #9a7a4d;
+}
+.reveal svg { width: 20px; height: 20px; fill: currentColor; }
+.reveal.is-on { color: #bb6b07; }
+
+/* ===== Login extras ===== */
+.social-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.social-row .social-button { margin-bottom: 0; }
+
+.login-create {
+  margin: 18px 0 0;
+  text-align: center;
+  color: #6b6259;
+  font-size: 0.92rem;
+}
+.login-create a { color: #b07410; font-weight: 700; }
+
+/* ===== Toast ===== */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 32px;
+  transform: translate(-50%, 20px);
+  max-width: min(460px, 90vw);
+  background: #2f3743;
+  color: #fff;
+  padding: 14px 20px;
+  border-radius: 16px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  box-shadow: 0 18px 40px rgba(20, 24, 35, 0.35);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  z-index: 50;
+}
+.toast.is-visible {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+.alert-card__action:hover { text-decoration: underline; }
+
+/* ===== Polimento geral ===== */
+.screen-container::-webkit-scrollbar { width: 0; }
+.screen-container { scrollbar-width: none; }
+
+:focus-visible {
+  outline: 2px solid #bb6b07;
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+button { -webkit-tap-highlight-color: transparent; }
+
+.primary-button:active,
+.secondary-button:active,
+.service-card:active,
+.time-option:active,
+.social-button:active,
+.bottom-nav__item:active,
+.link-block:active {
+  transform: scale(0.98);
+}
+
+/* ===== Badge de notificação no nav ===== */
+.nav-icon-wrap { position: relative; display: inline-grid; place-items: center; }
+.nav-badge {
+  position: absolute;
+  top: -6px;
+  right: -10px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: #e53935;
+  color: #fff;
+  font-size: 0.62rem;
+  font-weight: 800;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 0 0 2px #fff;
+}
+
+/* ===== Botão de login com loading ===== */
+.login-button.is-loading {
+  opacity: 0.85;
+  pointer-events: none;
+  position: relative;
+}
+.login-button.is-loading::after {
+  content: "";
+  width: 16px;
+  height: 16px;
+  margin-left: 10px;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  border-top-color: #fff;
+  border-radius: 50%;
+  display: inline-block;
+  vertical-align: -3px;
+  animation: spin 0.6s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ===== Estacionamento ativo / cronômetro ===== */
+.status-card--active { border-color: rgba(31, 138, 76, 0.4); background: #f3fbf5; }
+
+.parking-timer { margin: 16px 0 10px; }
+.parking-timer__value {
+  display: block;
+  font-size: 2.4rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: #1f8a4c;
+  font-variant-numeric: tabular-nums;
+}
+.parking-timer__label {
+  display: block;
+  color: #5d7766;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-top: 2px;
+}
+.parking-bar {
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(31, 138, 76, 0.16);
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+.parking-bar span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #2ecc71, #1f8a4c);
+  border-radius: 999px;
+  transition: width 1s linear;
+}
+
+/* ===== Multas — estado vazio ===== */
+.fines-empty {
+  text-align: center;
+  color: #1f8a4c;
+  font-weight: 700;
+  background: #eefaf1;
+  border-radius: 20px;
+  padding: 22px 18px;
+  margin: 4px 0 18px;
 }
